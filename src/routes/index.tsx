@@ -45,4 +45,6 @@ export const router = createBrowserRouter([
       { path: 'ranking', element: <Ranking /> },
     ],
   },
-]);
+], {
+  basename: import.meta.env.BASE_URL
+});
