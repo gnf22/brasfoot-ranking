@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Trophy, X, Plus } from 'lucide-react';
+import { ArrowLeft, Trophy, X, Plus, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { PageContainer } from '../components/common/PageContainer';

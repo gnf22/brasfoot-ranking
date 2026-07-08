@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import ReactSelect from 'react-select';
 import { z } from 'zod';
 import { Input } from '../common/Input';
-import { Select } from '../common/Select';
 import type { CoachTeam, Team, CoachTeamYearStat } from '../../models';
 import { createWorker } from 'tesseract.js';
 import { Loader2, Image as ImageIcon } from 'lucide-react';
@@ -22,6 +21,7 @@ type CoachTeamFormData = z.infer<typeof coachTeamSchema>;
 
 interface CoachTeamFormProps {
   initialData?: CoachTeam;
+  coachId: string;
   teams: Team[];
   filter?: 'Clube' | 'Selecao' | 'Todos';
   onSubmit: (data: Omit<CoachTeam, 'id'>) => Promise<void>;
@@ -303,7 +303,7 @@ export function CoachTeamForm({ initialData, coachId, teams, filter = 'Todos', o
     await onSubmit({
       ...data,
       coachId,
-      anoFim: data.clubeAtual ? null : (data.anoFim || null),
+      anoFim: data.clubeAtual ? undefined : (data.anoFim || undefined),
       estatisticasPorAno,
       jogos: tJogos,
       vitorias: tVitorias,
