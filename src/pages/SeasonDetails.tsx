@@ -136,6 +136,17 @@ export function SeasonDetails() {
 
       const summaryList = Array.from(summaryMap.values());
 
+      // Ordenar clubes antes de seleções
+      summaryList.forEach(summary => {
+        summary.teams.sort((a, b) => {
+          const tipoA = a.tipo || 'Clube';
+          const tipoB = b.tipo || 'Clube';
+          if (tipoA === 'Clube' && tipoB === 'Selecao') return -1;
+          if (tipoA === 'Selecao' && tipoB === 'Clube') return 1;
+          return a.nome.localeCompare(b.nome);
+        });
+      });
+
       // Ordenar por pontos, depois aproveitamento, depois vitórias, depois jogos
       const getAprov = (v: number, e: number, j: number) => j > 0 ? ((v * 3 + e) / (j * 3)) * 100 : 0;
       summaryList.sort((a, b) => {
@@ -197,7 +208,7 @@ export function SeasonDetails() {
                 <thead className="text-xs uppercase bg-muted/50 border-b">
                   <tr>
                     <th className="px-6 py-4 font-medium">Técnico</th>
-                    <th className="px-6 py-4 font-medium">Clube</th>
+                    <th className="px-6 py-4 font-medium">Clube / Seleção</th>
                     <th className="px-6 py-4 font-medium text-center">Jogos</th>
                     <th className="px-6 py-4 font-medium text-center">Pontos</th>
                     <th className="px-6 py-4 font-medium text-center">V - E - D (%)</th>
@@ -215,7 +226,7 @@ export function SeasonDetails() {
                           <span className="text-xs text-muted-foreground">{summary.coach.nacionalidade}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex flex-wrap items-center gap-1.5 text-sm">
+                          <div className="flex items-center gap-1.5 text-sm whitespace-nowrap">
                             {summary.teams.map((t, i) => (
                               <div key={t.id} className="flex items-center gap-1.5">
                                 {i > 0 && <span className="text-muted-foreground/50 font-light">/</span>}
