@@ -63,7 +63,6 @@ export class RankingService {
 
         // Bônus Mundial
         if (comp.tipo === 'Mundial') {
-          totalPontos += 20;
           mundial++;
         } else if (comp.tipo === 'Continental') {
           continental++;

@@ -131,9 +131,6 @@ export function SeasonDetails() {
           if (weight) {
             existing.pontos += weight.pontosTitulo || 0;
           }
-          if (comp.tipo === 'Mundial') {
-            existing.pontos += 20;
-          }
         }
       }
 
