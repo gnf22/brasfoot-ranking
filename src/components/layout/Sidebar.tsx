@@ -23,7 +23,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
       isOpen ? "translate-x-0 flex" : "-translate-x-full flex"
     )}>
       <div className="h-16 flex items-center justify-between px-6 border-b">
-        <h1 className="font-bold text-xl tracking-tight text-primary">Brasfoot Pro</h1>
+        <h1 className="font-bold text-xl tracking-tight text-primary">Brasfoot Futnews</h1>
         <button onClick={onClose} className="md:hidden p-2 text-muted-foreground hover:bg-muted rounded-md">
           <X className="w-5 h-5" />
         </button>

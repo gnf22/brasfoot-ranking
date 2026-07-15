@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Edit, Trash2, Trophy, X, ArrowDownCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -46,6 +46,43 @@ export function CoachDetails() {
   const [editingTitle, setEditingTitle] = useState<CoachTitle | undefined>();
   const [editingRelegation, setEditingRelegation] = useState<CoachRelegation | undefined>();
   const [teamModalFilter, setTeamModalFilter] = useState<'Clube' | 'Selecao' | 'Todos'>('Todos');
+
+  // Drag to scroll for Hall de Títulos
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [dragMoved, setDragMoved] = useState(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setDragMoved(false);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    if (Math.abs(walk) > 5) setDragMoved(true);
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleCardClick = (item: { comp: Competition, list: CoachTitle[] }) => {
+    if (dragMoved) return;
+    setHallModalData({ comp: item.comp, titles: item.list });
+  };
 
   useEffect(() => {
     if (id) {
@@ -200,16 +237,29 @@ export function CoachDetails() {
   const passagensClubes = passagens.filter(p => {
     const t = teams.find(t => t.id === p.teamId);
     return t?.tipo !== 'Selecao';
-  });
+  }).sort((a, b) => a.anoInicio - b.anoInicio);
+
   const passagensSelecoes = passagens.filter(p => {
     const t = teams.find(t => t.id === p.teamId);
     return t?.tipo === 'Selecao';
-  });
+  }).sort((a, b) => a.anoInicio - b.anoInicio);
 
   const hallItems = Object.entries(hallDeTitulos).map(([compId, list]) => {
     const comp = competitions.find(c => c.id === compId);
     return { comp, list };
-  }).filter(item => item.comp);
+  }).filter(item => item.comp).sort((a, b) => {
+    const compOrder: Record<string, number> = {
+      'Seleções': 1,
+      'Mundial': 2,
+      'Continental': 3,
+      'Nacional': 4,
+      'Copa': 5,
+      'Supercopa': 6
+    };
+    const orderA = compOrder[a.comp!.tipo] || 99;
+    const orderB = compOrder[b.comp!.tipo] || 99;
+    return orderA - orderB;
+  });
 
   return (
     <PageContainer>
@@ -233,12 +283,19 @@ export function CoachDetails() {
           <h2 className="text-2xl font-bold tracking-tight mb-4 flex items-center gap-2">
             <Trophy className="w-6 h-6 text-yellow-500" /> Hall de Títulos
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div 
+            ref={scrollRef}
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            className="flex overflow-x-auto pb-4 gap-4 snap-x sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 sm:pb-0 scrollbar-hide cursor-grab active:cursor-grabbing"
+          >
             {hallItems.map((item, idx) => (
               <div 
                 key={idx} 
-                onClick={() => setHallModalData({ comp: item.comp!, titles: item.list })}
-                className="bg-card border rounded-xl p-4 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-all shadow-sm hover:shadow-md"
+                onClick={() => handleCardClick(item as any)}
+                className="bg-card border rounded-xl p-4 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-all shadow-sm hover:shadow-md shrink-0 w-36 sm:w-auto snap-center select-none"
               >
                 {item.comp?.logoTrofeu ? (
                   <img src={item.comp.logoTrofeu} alt="Troféu" className="w-16 h-16 object-contain" />
@@ -586,24 +643,9 @@ export function CoachDetails() {
                   <tbody className="divide-y">
                     {[...titulos]
                       .sort((a, b) => {
-                        const compOrder: Record<string, number> = {
-                          'Seleções': 1,
-                          'Mundial': 2,
-                          'Continental': 3,
-                          'Nacional': 4,
-                          'Copa': 5,
-                          'Supercopa': 6
-                        };
-                        const compA = competitions.find(c => c.id === a.competitionId);
-                        const compB = competitions.find(c => c.id === b.competitionId);
-                        const orderA = compA ? (compOrder[compA.tipo] || 99) : 99;
-                        const orderB = compB ? (compOrder[compB.tipo] || 99) : 99;
-                        
-                        if (orderA !== orderB) return orderA - orderB;
-                        
                         const seasonA = seasons.find(s => s.id === a.seasonId);
                         const seasonB = seasons.find(s => s.id === b.seasonId);
-                        return (seasonB?.anoInicio || 0) - (seasonA?.anoInicio || 0);
+                        return (seasonA?.anoInicio || 0) - (seasonB?.anoInicio || 0);
                       })
                       .map((t) => {
                       const comp = competitions.find(c => c.id === t.competitionId);
@@ -669,7 +711,7 @@ export function CoachDetails() {
                   .sort((a, b) => {
                     const seasonA = seasons.find(s => s.id === a.seasonId);
                     const seasonB = seasons.find(s => s.id === b.seasonId);
-                    return (seasonB?.anoInicio || 0) - (seasonA?.anoInicio || 0);
+                    return (seasonA?.anoInicio || 0) - (seasonB?.anoInicio || 0);
                   })
                   .map((t) => {
                   const comp = competitions.find(c => c.id === t.competitionId);
@@ -751,55 +793,123 @@ export function CoachDetails() {
             {rebaixamentos.length === 0 ? (
               <p className="p-6 text-center text-muted-foreground">Nenhum rebaixamento registrado.</p>
             ) : (
-              <div className="divide-y">
-                {[...rebaixamentos]
-                  .sort((a, b) => {
-                    const seasonA = seasons.find(s => s.id === a.seasonId);
-                    const seasonB = seasons.find(s => s.id === b.seasonId);
-                    return (seasonB?.anoInicio || 0) - (seasonA?.anoInicio || 0);
-                  })
-                  .map((r) => {
-                    const team = teams.find(tm => tm.id === r.teamId);
-                    const season = seasons.find(s => s.id === r.seasonId);
-                    return (
-                      <div key={r.id} className="p-4 flex flex-col gap-3 hover:bg-muted/30 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-center gap-3">
-                            {team?.escudo ? (
-                              <img src={team.escudo} alt={team.nome} className="w-10 h-10 object-contain" />
-                            ) : null}
-                            <div>
-                              <p className="font-semibold text-lg leading-tight">{team?.nome || 'Desconhecido'}</p>
-                              {r.competition && (
-                                <p className="text-sm text-muted-foreground">{r.competition}</p>
+              <>
+                {/* DESKTOP TABLE */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs uppercase bg-muted/50 border-b">
+                      <tr>
+                        <th className="px-4 py-3 font-medium">Clube</th>
+                        <th className="px-4 py-3 font-medium">Competição</th>
+                        <th className="px-4 py-3 font-medium text-center">Temporada</th>
+                        {isAdmin && <th className="px-4 py-3 font-medium text-right">Ações</th>}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {[...rebaixamentos]
+                        .sort((a, b) => {
+                          const seasonA = seasons.find(s => s.id === a.seasonId);
+                          const seasonB = seasons.find(s => s.id === b.seasonId);
+                          return (seasonA?.anoInicio || 0) - (seasonB?.anoInicio || 0);
+                        })
+                        .map((r) => {
+                          const team = teams.find(tm => tm.id === r.teamId);
+                          const season = seasons.find(s => s.id === r.seasonId);
+                          return (
+                            <tr key={r.id} className="hover:bg-muted/50 transition-colors">
+                              <td className="px-4 py-3 font-medium">
+                                <div className="flex items-center gap-2">
+                                  {team?.escudo ? (
+                                    <img src={team.escudo} alt={team.nome} className="w-6 h-6 object-contain" />
+                                  ) : null}
+                                  {team?.nome || 'Desconhecido'}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div>
+                                  {r.competition && <span className="block">{r.competition}</span>}
+                                  {r.observacoes && <span className="text-xs text-muted-foreground italic block mt-0.5">{r.observacoes}</span>}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-center">{season?.anoInicio || '-'}</td>
+                              {isAdmin && (
+                                <td className="px-4 py-3 text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <button 
+                                      onClick={() => { setEditingRelegation(r); setIsRelegationModalOpen(true); }}
+                                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                                      title="Editar"
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDeleteRelegation(r.id)}
+                                      className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+                                      title="Excluir"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </td>
                               )}
-                              {r.observacoes && (
-                                <p className="text-xs text-muted-foreground italic mt-1">{r.observacoes}</p>
-                              )}
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* MOBILE CARDS */}
+                <div className="md:hidden divide-y">
+                  {[...rebaixamentos]
+                    .sort((a, b) => {
+                      const seasonA = seasons.find(s => s.id === a.seasonId);
+                      const seasonB = seasons.find(s => s.id === b.seasonId);
+                      return (seasonA?.anoInicio || 0) - (seasonB?.anoInicio || 0);
+                    })
+                    .map((r) => {
+                      const team = teams.find(tm => tm.id === r.teamId);
+                      const season = seasons.find(s => s.id === r.seasonId);
+                      return (
+                        <div key={r.id} className="p-4 flex flex-col gap-3 hover:bg-muted/30 transition-colors">
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                              {team?.escudo ? (
+                                <img src={team.escudo} alt={team.nome} className="w-10 h-10 object-contain" />
+                              ) : null}
+                              <div>
+                                <p className="font-semibold text-lg leading-tight">{team?.nome || 'Desconhecido'}</p>
+                                {r.competition && (
+                                  <p className="text-sm text-muted-foreground">{r.competition}</p>
+                                )}
+                                {r.observacoes && (
+                                  <p className="text-xs text-muted-foreground italic mt-1">{r.observacoes}</p>
+                                )}
+                              </div>
                             </div>
+                            <span className="font-bold text-lg text-foreground shrink-0">{season?.anoInicio || '-'}</span>
                           </div>
-                          <span className="font-bold text-lg text-primary shrink-0">{season?.anoInicio || '-'}</span>
+                          {isAdmin && (
+                            <div className="flex justify-end gap-2 pt-2 border-t border-muted/50 mt-1">
+                              <button 
+                                onClick={() => { setEditingRelegation(r); setIsRelegationModalOpen(true); }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                              >
+                                <Edit className="w-4 h-4" /> Editar
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteRelegation(r.id)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" /> Excluir
+                              </button>
+                            </div>
+                          )}
                         </div>
-                        {isAdmin && (
-                          <div className="flex justify-end gap-2 pt-2 border-t border-muted/50 mt-1">
-                            <button 
-                              onClick={() => { setEditingRelegation(r); setIsRelegationModalOpen(true); }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                            >
-                              <Edit className="w-4 h-4" /> Editar
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteRelegation(r.id)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" /> Excluir
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-              </div>
+                      );
+                    })}
+                </div>
+              </>
             )}
           </AppCardContent>
         </AppCard>
@@ -808,48 +918,55 @@ export function CoachDetails() {
 
       {/* MODAL HALL DE TÍTULOS DETALHES */}
       {hallModalData && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card w-full max-w-lg rounded-xl shadow-lg border overflow-hidden">
-            <div className="p-6 border-b flex justify-between items-center bg-muted/20">
-              <div className="flex items-center gap-4">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-card w-full max-w-lg rounded-t-2xl sm:rounded-xl shadow-2xl border-t sm:border overflow-hidden max-h-[85vh] sm:max-h-[80vh] flex flex-col relative animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+            
+            {/* Mobile handle */}
+            <div className="w-full flex justify-center pt-3 pb-1 sm:hidden absolute top-0 left-0 z-10">
+              <div className="w-12 h-1.5 bg-muted-foreground/20 rounded-full" />
+            </div>
+
+            <div className="px-5 pt-8 pb-5 sm:p-6 sm:pt-6 border-b flex justify-between items-start sm:items-center bg-muted/10 shrink-0 relative">
+              <div className="flex items-center gap-4 flex-1">
                 {hallModalData.comp.logoTrofeu ? (
-                  <img src={hallModalData.comp.logoTrofeu} alt="Troféu" className="w-12 h-12 object-contain" />
+                  <img src={hallModalData.comp.logoTrofeu} alt="Troféu" className="w-12 h-12 sm:w-14 sm:h-14 object-contain drop-shadow-md" />
                 ) : (
-                  <Trophy className="w-8 h-8 text-yellow-500" />
+                  <Trophy className="w-10 h-10 text-yellow-500 drop-shadow-md" />
                 )}
-                <div>
-                  <h2 className="text-xl font-bold">{hallModalData.comp.nome}</h2>
-                  <p className="text-sm text-muted-foreground">{hallModalData.titles.length} conquista(s)</p>
+                <div className="flex-1 pr-2">
+                  <h2 className="text-lg sm:text-xl font-bold leading-tight text-foreground">{hallModalData.comp.nome}</h2>
+                  <p className="text-sm font-medium text-muted-foreground mt-1">{hallModalData.titles.length} conquista(s)</p>
                 </div>
               </div>
               <button 
                 onClick={() => setHallModalData(null)}
-                className="p-2 hover:bg-muted rounded-md transition-colors"
+                className="p-2 -mr-2 sm:mr-0 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground shrink-0"
+                title="Fechar"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-0 max-h-[400px] overflow-y-auto">
-              <div className="divide-y">
+            <div className="p-0 overflow-y-auto flex-1 pb-6 sm:pb-0">
+              <div className="divide-y divide-border/50">
                 {hallModalData.titles.map((t, idx) => {
                   const team = teams.find(tm => tm.id === t.teamId);
                   const season = seasons.find(s => s.id === t.seasonId);
                   return (
-                    <div key={idx} className="p-4 flex items-center justify-between hover:bg-muted/30">
-                      <div className="flex items-center gap-3">
+                    <div key={idx} className="px-5 py-4 sm:p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-4">
                         {team?.escudo ? (
-                          <img src={team.escudo} alt={team.nome} className="w-8 h-8 object-contain" />
+                          <img src={team.escudo} alt={team.nome} className="w-10 h-10 sm:w-9 sm:h-9 object-contain drop-shadow-sm" />
                         ) : (
-                          <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-xs font-bold">
+                          <div className="w-10 h-10 sm:w-9 sm:h-9 bg-muted rounded-full flex items-center justify-center text-xs font-bold border shadow-sm">
                             {team?.nome?.substring(0,2).toUpperCase()}
                           </div>
                         )}
                         <div>
-                          <p className="font-semibold text-sm">{team?.nome}</p>
-                          <p className="text-xs text-muted-foreground">Temporada {season?.descricao}</p>
+                          <p className="font-semibold text-base sm:text-sm text-foreground leading-tight">{team?.nome}</p>
+                          <p className="text-xs font-medium text-muted-foreground mt-0.5">Temporada {season?.descricao}</p>
                         </div>
                       </div>
-                      <div className="font-bold text-lg text-primary">
+                      <div className="font-bold text-xl sm:text-lg text-primary ml-4 shrink-0">
                         {season?.anoInicio}
                       </div>
                     </div>

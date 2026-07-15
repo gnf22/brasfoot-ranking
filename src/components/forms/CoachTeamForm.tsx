@@ -96,6 +96,13 @@ export function CoachTeamForm({ initialData, coachId, teams, filter = 'Todos', o
     }
   }, [clubeAtual, setValue]);
 
+  // Garante que o anoFim não seja menor que o anoInicio
+  useEffect(() => {
+    if (anoInicio && anoFim && anoInicio > anoFim) {
+      setValue('anoFim', anoInicio);
+    }
+  }, [anoInicio, anoFim, setValue]);
+
   const handleStatChange = (field: keyof CoachTeamYearStat, value: number) => {
     setStatsMap(prev => {
       const currentStat = prev[selectedYear] || {

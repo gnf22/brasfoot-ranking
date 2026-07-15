@@ -50,7 +50,7 @@ export function Login() {
           </div>
           
           <h1 className="text-3xl font-bold tracking-tight text-center mb-2">
-            Brasfoot Pro
+            Brasfoot Futnews
           </h1>
           <p className="text-muted-foreground text-center mb-8">
             Faça login para acessar o painel de controle e gerenciar seu banco de dados.
@@ -66,7 +66,7 @@ export function Login() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-8">
-          © {new Date().getFullYear()} Brasfoot Pro. Todos os direitos reservados.
+          © {new Date().getFullYear()} Brasfoot Futnews. Todos os direitos reservados.
         </p>
       </div>
     </div>
