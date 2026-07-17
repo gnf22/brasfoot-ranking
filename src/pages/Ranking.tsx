@@ -95,42 +95,44 @@ export function Ranking() {
               {/* DESKTOP TABLE */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                <thead className="text-xs uppercase bg-muted/50 border-b">
+                <thead className="text-[11px] uppercase bg-muted/50 border-b tracking-wider">
                   <tr>
-                    <th className="px-6 py-4 font-medium text-center">Pos</th>
-                    <th className="px-6 py-4 font-medium">Técnico</th>
-                    <th className="px-6 py-4 font-medium text-center">Pontos</th>
-                    <th className="px-6 py-4 font-medium text-center">Títulos</th>
-                    <th className="px-6 py-4 font-medium text-center">Jogos</th>
-                    <th className="px-6 py-4 font-medium text-center">% Aprov.</th>
-                    <th className="px-6 py-4 font-medium text-center">V-E-D</th>
+                    <th className="px-3 py-2 font-medium text-center w-10">Pos</th>
+                    <th className="px-3 py-2 font-medium">Técnico</th>
+                    <th className="px-3 py-2 font-medium text-center">Pontos</th>
+                    <th className="px-3 py-2 font-medium text-center">Títulos</th>
+                    <th className="px-3 py-2 font-medium text-center">Jogos</th>
+                    <th className="px-3 py-2 font-medium text-center">% Aprov.</th>
+                    <th className="px-3 py-2 font-medium text-center">V-E-D</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {ranking.map((row, index) => (
-                    <tr key={row.coachId} className="hover:bg-muted/50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-center text-lg text-primary">
+                    <tr key={row.coachId} className="hover:bg-muted/50 transition-colors group">
+                      <td className="px-3 py-2 font-bold text-center text-muted-foreground group-hover:text-foreground">
                         {index + 1}º
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          {index < 3 && <Trophy className={`w-5 h-5 ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : 'text-amber-600'}`} />}
-                          <Link to={`/coaches/${row.coachId}`} className="block hover:opacity-80 transition-opacity">
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          {index < 3 && <Trophy className={`w-4 h-4 ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : 'text-amber-600'}`} />}
+                          <Link to={`/coaches/${row.coachId}`} className="block hover:opacity-80 transition-opacity leading-tight">
                             <p className="font-semibold text-primary hover:underline">{row.coach?.nome || 'Desconhecido'}</p>
-                            <p className="text-xs text-muted-foreground">{row.coach?.nacionalidade}</p>
+                            <p className="text-[11px] text-muted-foreground">{row.coach?.nacionalidade}</p>
                           </Link>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center font-bold text-lg">{row.totalPontos}</td>
-                      <td className="px-6 py-4 text-center">{row.totalTitulos}</td>
-                      <td className="px-6 py-4 text-center">{row.totalJogos}</td>
-                      <td className="px-6 py-4 text-center font-medium">
-                        <span className={`px-2 py-1 rounded-full text-xs ${row.aproveitamento >= 60 ? 'bg-green-100 text-green-700' : row.aproveitamento >= 40 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                      <td className="px-3 py-2 text-center font-bold text-primary">{row.totalPontos}</td>
+                      <td className="px-3 py-2 text-center font-medium">{row.totalTitulos}</td>
+                      <td className="px-3 py-2 text-center font-medium">{row.totalJogos}</td>
+                      <td className="px-3 py-2 text-center font-medium">
+                        <span className={`px-1.5 py-0.5 rounded text-[11px] font-semibold ${row.aproveitamento >= 60 ? 'bg-green-100 text-green-700' : row.aproveitamento >= 40 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
                           {row.aproveitamento}%
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-center text-xs text-muted-foreground">
-                        {row.totalVitorias} - {row.totalEmpates} - {row.totalDerrotas}
+                      <td className="px-3 py-2 text-center text-xs text-muted-foreground">
+                        <span className="text-green-600">{row.totalVitorias}</span> - 
+                        <span className="text-yellow-600"> {row.totalEmpates}</span> - 
+                        <span className="text-red-600"> {row.totalDerrotas}</span>
                       </td>
                     </tr>
                   ))}
@@ -141,42 +143,37 @@ export function Ranking() {
               {/* MOBILE CARDS */}
               <div className="md:hidden divide-y">
                 {ranking.map((row, index) => (
-                  <div key={row.coachId} className="p-4 flex gap-4 bg-card hover:bg-muted/30 transition-colors">
-                    <div className="flex flex-col items-center min-w-[3rem]">
-                      <span className="font-bold text-2xl text-primary">{index + 1}º</span>
-                      {index < 3 && <Trophy className={`w-5 h-5 mt-1 ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : 'text-amber-600'}`} />}
+                  <div key={row.coachId} className="p-3 flex flex-col gap-2 hover:bg-muted/30 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <div className="flex flex-col items-center flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary font-bold justify-center text-sm relative">
+                        {index + 1}º
+                        {index < 3 && <Trophy className={`w-3.5 h-3.5 absolute -bottom-1 -right-1 ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : 'text-amber-600'}`} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2">
+                          <Link to={`/coaches/${row.coachId}`} className="font-semibold text-base text-primary hover:underline block leading-tight truncate">
+                            {row.coach?.nome || 'Desconhecido'}
+                          </Link>
+                          <span className="font-bold text-base text-primary whitespace-nowrap">{row.totalPontos} pt</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{row.coach?.nacionalidade}</div>
+                      </div>
                     </div>
                     
-                    <div className="flex-1 min-w-0">
-                      <Link to={`/coaches/${row.coachId}`} className="block hover:opacity-80 transition-opacity mb-1">
-                        <p className="font-semibold text-primary hover:underline text-lg leading-tight truncate">{row.coach?.nome || 'Desconhecido'}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{row.coach?.nacionalidade}</p>
-                      </Link>
-                      
-                      <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm mt-4">
-                        <div>
-                          <span className="text-muted-foreground text-[10px] uppercase tracking-wider block mb-0.5">Pontos</span>
-                          <span className="font-bold text-xl">{row.totalPontos}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground text-[10px] uppercase tracking-wider block mb-0.5">Títulos</span>
-                          <span className="font-semibold text-lg">{row.totalTitulos}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground text-[10px] uppercase tracking-wider block mb-0.5">Aprov. (%)</span>
-                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${row.aproveitamento >= 60 ? 'bg-green-100 text-green-700' : row.aproveitamento >= 40 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                            {row.aproveitamento}%
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground text-[10px] uppercase tracking-wider block mb-0.5">V-E-D / Jogos</span>
-                          <span className="text-sm font-medium">
-                            <span className="text-green-600">{row.totalVitorias}</span> - 
-                            <span className="text-yellow-600"> {row.totalEmpates}</span> - 
-                            <span className="text-red-600"> {row.totalDerrotas}</span>
-                            <span className="text-muted-foreground text-xs ml-1">({row.totalJogos})</span>
-                          </span>
-                        </div>
+                    <div className="flex items-center justify-between text-xs pl-11">
+                      <div className="text-muted-foreground flex flex-wrap items-center gap-1.5">
+                        <span className="flex items-center gap-1"><Trophy className="w-3 h-3 text-yellow-500" /> <strong className="text-foreground">{row.totalTitulos}</strong></span>
+                        <span className="text-muted-foreground/30">|</span>
+                        <span><strong className="text-foreground">{row.totalJogos}</strong> J</span>
+                        <span className="text-muted-foreground/30">|</span>
+                        <span>
+                          <strong className="text-green-600">{row.totalVitorias}</strong>-
+                          <strong className="text-yellow-600">{row.totalEmpates}</strong>-
+                          <strong className="text-red-600">{row.totalDerrotas}</strong>
+                        </span>
+                        <span className={`text-[10px] ml-1 font-semibold px-1.5 py-0.5 rounded-md ${row.aproveitamento >= 60 ? 'bg-green-100 text-green-700' : row.aproveitamento >= 40 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                          {row.aproveitamento}%
+                        </span>
                       </div>
                     </div>
                   </div>

@@ -205,62 +205,64 @@ export function SeasonDetails() {
               {/* DESKTOP TABLE */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                <thead className="text-xs uppercase bg-muted/50 border-b">
+                <thead className="text-[10px] uppercase bg-muted/50 border-b tracking-wider">
                   <tr>
-                    <th className="px-6 py-4 font-medium">Técnico</th>
-                    <th className="px-6 py-4 font-medium">Clube / Seleção</th>
-                    <th className="px-6 py-4 font-medium text-center">Jogos</th>
-                    <th className="px-6 py-4 font-medium text-center">Pontos</th>
-                    <th className="px-6 py-4 font-medium text-center">V - E - D (%)</th>
-                    <th className="px-6 py-4 font-medium">Títulos na Temporada</th>
+                    <th className="px-2 py-1 font-medium text-center w-8">Pos</th>
+                    <th className="px-2 py-1 font-medium">Técnico</th>
+                    <th className="px-2 py-1 font-medium">Clube / Seleção</th>
+                    <th className="px-2 py-1 font-medium text-center">Jogos</th>
+                    <th className="px-2 py-1 font-medium text-center">Pontos</th>
+                    <th className="px-2 py-1 font-medium text-center">V-E-D (%)</th>
+                    <th className="px-2 py-1 font-medium">Títulos na Temporada</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {summaries.map((summary, idx) => {
                     return (
-                      <tr key={`${summary.coach.id}-${idx}`} className="hover:bg-muted/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <Link to={`/coaches/${summary.coach.id}`} className="font-semibold text-primary hover:underline block hover:opacity-80">
+                      <tr key={`${summary.coach.id}-${idx}`} className="hover:bg-muted/50 transition-colors group">
+                        <td className="px-2 py-1 text-center font-bold text-[11px] text-muted-foreground group-hover:text-foreground">{idx + 1}º</td>
+                        <td className="px-2 py-1">
+                          <Link to={`/coaches/${summary.coach.id}`} className="font-semibold text-[12px] text-primary hover:underline block hover:opacity-80 leading-tight">
                             {summary.coach.nome}
                           </Link>
-                          <span className="text-xs text-muted-foreground">{summary.coach.nacionalidade}</span>
+                          <span className="text-[9px] text-muted-foreground">{summary.coach.nacionalidade}</span>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-1.5 text-sm whitespace-nowrap">
+                        <td className="px-2 py-1">
+                          <div className="flex items-center gap-1 text-[11px] whitespace-nowrap">
                             {summary.teams.map((t, i) => (
-                              <div key={t.id} className="flex items-center gap-1.5">
-                                {i > 0 && <span className="text-muted-foreground/50 font-light">/</span>}
-                                {t.escudo && <img src={t.escudo} alt={t.nome} className="w-5 h-5 object-contain" title={t.nome} />}
-                                <span className="font-medium whitespace-nowrap">{t.nome}</span>
+                              <div key={t.id} className="flex items-center gap-1">
+                                {i > 0 && <span className="text-muted-foreground/30 font-light mx-0.5">/</span>}
+                                {t.escudo && <img src={t.escudo} alt={t.nome} className="w-3.5 h-3.5 object-contain" title={t.nome} />}
+                                <span className="font-medium">{t.nome}</span>
                               </div>
                             ))}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-center">{summary.stats.jogos}</td>
-                        <td className="px-6 py-4 text-center font-bold text-primary">{summary.pontos}</td>
-                        <td className="px-6 py-4 text-center whitespace-nowrap">
+                        <td className="px-2 py-1 text-center font-medium text-[12px]">{summary.stats.jogos}</td>
+                        <td className="px-2 py-1 text-center font-bold text-primary text-[12px]">{summary.pontos}</td>
+                        <td className="px-2 py-1 text-center whitespace-nowrap text-[11px]">
                           <span className="text-green-600 font-medium">{summary.stats.vitorias}</span> - 
                           <span className="text-yellow-600 font-medium"> {summary.stats.empates}</span> - 
                           <span className="text-red-600 font-medium"> {summary.stats.derrotas}</span>
                           {summary.stats.jogos > 0 && (
-                            <span className="text-xs text-muted-foreground ml-2 font-medium">
-                              ({(((summary.stats.vitorias * 3 + summary.stats.empates) / (summary.stats.jogos * 3)) * 100).toFixed(1)}%)
+                            <span className="text-[9px] text-muted-foreground ml-1 font-semibold bg-muted px-1 py-0.5 rounded-sm">
+                              {(((summary.stats.vitorias * 3 + summary.stats.empates) / (summary.stats.jogos * 3)) * 100).toFixed(1)}%
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-2 py-1">
                           {summary.competitions.length === 0 ? (
-                            <span className="text-muted-foreground text-xs">-</span>
+                            <span className="text-muted-foreground/50 text-[10px]">-</span>
                           ) : (
                             <div className="flex flex-wrap gap-1">
                               {summary.competitions.map((c, i) => (
-                                <span key={i} className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md text-xs font-medium" title={c.nome}>
+                                <span key={i} className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-[9px] font-semibold" title={c.nome}>
                                   {c.logoTrofeu ? (
-                                    <img src={c.logoTrofeu} alt="Troféu" className="w-4 h-4 object-contain" />
+                                    <img src={c.logoTrofeu} alt="Troféu" className="w-3 h-3 object-contain" />
                                   ) : (
-                                    <Trophy className="w-3 h-3" />
+                                    <Trophy className="w-2.5 h-2.5" />
                                   )}
-                                  <Link to={`/competitions/${c.id}`} className="hover:underline">{c.nome}</Link>
+                                  <Link to={`/competitions/${c.id}`} className="hover:underline truncate max-w-[80px]">{c.nome}</Link>
                                 </span>
                               ))}
                             </div>
@@ -276,67 +278,61 @@ export function SeasonDetails() {
               {/* MOBILE CARDS */}
               <div className="md:hidden divide-y">
                 {summaries.map((summary, idx) => (
-                  <div key={`${summary.coach.id}-${idx}`} className="p-4 flex flex-col gap-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <Link to={`/coaches/${summary.coach.id}`} className="font-semibold text-lg text-primary hover:underline block leading-tight">
-                          {summary.coach.nome}
-                        </Link>
-                        <div className="flex flex-wrap items-center gap-1 mt-1 text-sm text-muted-foreground">
+                  <div key={`${summary.coach.id}-${idx}`} className="p-4 flex flex-col gap-2">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-sm">
+                        {idx + 1}º
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2">
+                          <Link to={`/coaches/${summary.coach.id}`} className="font-semibold text-base text-primary hover:underline block leading-tight truncate">
+                            {summary.coach.nome}
+                          </Link>
+                          <span className="font-bold text-base text-primary whitespace-nowrap">{summary.pontos} pt</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1 mt-0.5 text-xs text-muted-foreground">
                             {summary.teams.map((t, i) => (
                               <div key={t.id} className="flex items-center gap-1">
-                                {i > 0 && <span className="text-muted-foreground/50 text-xs">/</span>}
-                                {t.escudo && <img src={t.escudo} alt={t.nome} className="w-4 h-4 object-contain" />}
-                                <span>{t.nome}</span>
+                                {i > 0 && <span className="text-muted-foreground/50 text-[10px]">/</span>}
+                                {t.escudo && <img src={t.escudo} alt={t.nome} className="w-3.5 h-3.5 object-contain" />}
+                                <span className="truncate max-w-[120px]">{t.nome}</span>
                               </div>
                             ))}
-                          </div>
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-3 gap-2 text-sm mt-1">
-                      <div>
-                        <span className="text-muted-foreground text-[10px] uppercase tracking-wider block mb-0.5">Jogos</span>
-                        <span className="font-medium text-lg">{summary.stats.jogos}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-[10px] uppercase tracking-wider block mb-0.5">Pontos</span>
-                        <span className="font-bold text-lg text-primary">{summary.pontos}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-[10px] uppercase tracking-wider block mb-0.5">V-E-D (%)</span>
-                        <span className="font-medium text-sm">
-                          <span className="text-green-600">{summary.stats.vitorias}</span> - 
-                          <span className="text-yellow-600"> {summary.stats.empates}</span> - 
-                          <span className="text-red-600"> {summary.stats.derrotas}</span>
-                          {summary.stats.jogos > 0 && (
-                            <span className="text-xs text-muted-foreground ml-1">
-                              ({(((summary.stats.vitorias * 3 + summary.stats.empates) / (summary.stats.jogos * 3)) * 100).toFixed(1)}%)
-                            </span>
-                          )}
+                    <div className="flex items-center justify-between text-xs pl-11">
+                      <div className="text-muted-foreground flex items-center gap-2">
+                        <span><strong className="text-foreground">{summary.stats.jogos}</strong> J</span>
+                        <span className="text-muted-foreground/30">|</span>
+                        <span>
+                          <strong className="text-green-600">{summary.stats.vitorias}</strong>-
+                          <strong className="text-yellow-600">{summary.stats.empates}</strong>-
+                          <strong className="text-red-600">{summary.stats.derrotas}</strong>
                         </span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-1">
-                      <span className="text-muted-foreground text-[10px] uppercase tracking-wider block mb-1.5">Títulos</span>
-                      <div className="flex flex-wrap gap-2">
-                        {summary.competitions.length === 0 ? (
-                          <span className="text-muted-foreground text-sm">-</span>
-                        ) : (
-                          summary.competitions.map((c, i) => (
-                            <span key={i} className="inline-flex items-center gap-1.5 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md text-xs font-medium" title={c.nome}>
-                              {c.logoTrofeu ? (
-                                <img src={c.logoTrofeu} alt="Troféu" className="w-3.5 h-3.5 object-contain" />
-                              ) : (
-                                <Trophy className="w-3 h-3" />
-                              )}
-                              <Link to={`/competitions/${c.id}`} className="hover:underline">{c.nome}</Link>
-                            </span>
-                          ))
+                        {summary.stats.jogos > 0 && (
+                          <span className="text-[10px] text-muted-foreground font-semibold bg-muted px-1.5 py-0.5 rounded-md">
+                            {(((summary.stats.vitorias * 3 + summary.stats.empates) / (summary.stats.jogos * 3)) * 100).toFixed(1)}%
+                          </span>
                         )}
                       </div>
                     </div>
+                    
+                    {summary.competitions.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pl-11 mt-1">
+                        {summary.competitions.map((c, i) => (
+                          <span key={i} className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded text-[10px] font-semibold" title={c.nome}>
+                            {c.logoTrofeu ? (
+                              <img src={c.logoTrofeu} alt="Troféu" className="w-3 h-3 object-contain" />
+                            ) : (
+                              <Trophy className="w-2.5 h-2.5" />
+                            )}
+                            <Link to={`/competitions/${c.id}`} className="hover:underline truncate max-w-[140px]">{c.nome}</Link>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

@@ -191,7 +191,23 @@ export function TeamDetails() {
   const hallItems = Object.entries(hallDeTitulos).map(([_, list]) => {
     const comp = list[0].competition;
     return { comp, list };
-  }).filter(item => item.comp);
+  }).filter(item => item.comp).sort((a, b) => {
+    const compOrder: Record<string, number> = {
+      'Mundial': 1,
+      'Continental': 2,
+      'Nacional': 3,
+      'Copa': 4,
+      'Supercopa': 5
+    };
+    const orderA = compOrder[a.comp.tipo] || 99;
+    const orderB = compOrder[b.comp.tipo] || 99;
+    
+    if (orderA === orderB) {
+      return a.comp.nome.localeCompare(b.comp.nome);
+    }
+    
+    return orderA - orderB;
+  });
 
   return (
     <PageContainer>
