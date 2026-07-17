@@ -607,9 +607,11 @@ export function CoachDetails() {
           </AppCard>
         </div>
 
-        {/* TÍTULOS */}
+        {/* COLUNA DIREITA: TÍTULOS E REBAIXAMENTOS */}
+        <div className="flex flex-col gap-6">
+          {/* TÍTULOS */}
 
-        <AppCard>
+          <AppCard>
           <div className="p-4 border-b flex justify-between items-center bg-muted/20">
             <h3 className="font-semibold text-lg">Títulos Conquistados</h3>
             {isAdmin && (
@@ -913,6 +915,7 @@ export function CoachDetails() {
             )}
           </AppCardContent>
         </AppCard>
+        </div>
 
       </div>
 
