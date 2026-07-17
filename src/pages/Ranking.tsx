@@ -7,8 +7,10 @@ import { AppCard, AppCardContent } from '../components/common/AppCard';
 import { rankingCoachRepository, coachRepository } from '../repositories';
 import { rankingService } from '../services/RankingService';
 import type { RankingCoach, Coach } from '../models';
+import { useAuth } from '../contexts/AuthContext';
 
 export function Ranking() {
+  const { isAdmin } = useAuth();
   const [ranking, setRanking] = useState<(RankingCoach & { coach?: Coach })[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRecalculating, setIsRecalculating] = useState(false);
@@ -65,14 +67,16 @@ export function Ranking() {
         title="Ranking Geral" 
         description="Classificação atualizada dos melhores técnicos de futebol."
         actions={
-          <button 
-            onClick={handleRecalculate}
-            disabled={isRecalculating || isLoading}
-            className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium flex items-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRecalculating ? 'animate-spin' : ''}`} />
-            {isRecalculating ? 'Recalculando...' : 'Recalcular Ranking'}
-          </button>
+          isAdmin ? (
+            <button 
+              onClick={handleRecalculate}
+              disabled={isRecalculating || isLoading}
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium flex items-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRecalculating ? 'animate-spin' : ''}`} />
+              {isRecalculating ? 'Recalculando...' : 'Recalcular Ranking'}
+            </button>
+          ) : null
         }
       />
 

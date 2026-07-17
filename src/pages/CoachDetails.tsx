@@ -248,6 +248,12 @@ export function CoachDetails() {
     const comp = competitions.find(c => c.id === compId);
     return { comp, list };
   }).filter(item => item.comp).sort((a, b) => {
+    const isCopaMundoA = a.comp!.nome.toLowerCase().includes('copa do mundo');
+    const isCopaMundoB = b.comp!.nome.toLowerCase().includes('copa do mundo');
+    
+    if (isCopaMundoA && !isCopaMundoB) return -1;
+    if (!isCopaMundoA && isCopaMundoB) return 1;
+
     const compOrder: Record<string, number> = {
       'Seleções': 1,
       'Mundial': 2,
@@ -258,6 +264,11 @@ export function CoachDetails() {
     };
     const orderA = compOrder[a.comp!.tipo] || 99;
     const orderB = compOrder[b.comp!.tipo] || 99;
+    
+    if (orderA === orderB) {
+      return a.comp!.nome.localeCompare(b.comp!.nome);
+    }
+    
     return orderA - orderB;
   });
 
@@ -312,12 +323,10 @@ export function CoachDetails() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         
-        {/* COLUNA ESQUERDA: PASSAGENS */}
-        <div className="flex flex-col gap-6">
-          {/* PASSAGENS (CLUBES) */}
-          <AppCard>
+        {/* PASSAGENS (CLUBES) */}
+        <AppCard className="lg:col-start-1 lg:row-start-1">
           <div className="p-4 border-b flex justify-between items-center bg-muted/20">
             <h3 className="font-semibold text-lg">Passagens por Clubes</h3>
             {isAdmin && (
@@ -462,7 +471,7 @@ export function CoachDetails() {
           </AppCard>
 
           {/* PASSAGENS (SELEÇÕES) */}
-          <AppCard>
+          <AppCard className="lg:col-start-1 lg:row-start-2">
             <div className="p-4 border-b flex justify-between items-center bg-muted/20">
               <h3 className="font-semibold text-lg">Passagens por Seleções</h3>
               {isAdmin && (
@@ -605,13 +614,9 @@ export function CoachDetails() {
               )}
             </AppCardContent>
           </AppCard>
-        </div>
 
-        {/* COLUNA DIREITA: TÍTULOS E REBAIXAMENTOS */}
-        <div className="flex flex-col gap-6">
-          {/* TÍTULOS */}
-
-          <AppCard>
+        {/* TÍTULOS */}
+        <AppCard className="lg:col-start-2 lg:row-start-1">
           <div className="p-4 border-b flex justify-between items-center bg-muted/20">
             <h3 className="font-semibold text-lg">Títulos Conquistados</h3>
             {isAdmin && (
@@ -773,7 +778,7 @@ export function CoachDetails() {
         </AppCard>
 
         {/* REBAIXAMENTOS */}
-        <AppCard>
+        <AppCard className="lg:col-start-2 lg:row-start-2">
           <div className="p-4 border-b flex justify-between items-center bg-muted/20">
             <h3 className="font-semibold text-lg flex items-center gap-2">
               <ArrowDownCircle className="w-5 h-5 text-red-500" />
@@ -915,7 +920,6 @@ export function CoachDetails() {
             )}
           </AppCardContent>
         </AppCard>
-        </div>
 
       </div>
 
