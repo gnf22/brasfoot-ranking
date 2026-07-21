@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, Users, Shield, Calendar, Medal, TrendingDown, CheckCircle, Target, Flag, Globe, Star } from 'lucide-react';
+import { Trophy, Users, Shield, Calendar, Medal, TrendingDown, CheckCircle, Target, Flag, Globe } from 'lucide-react';
 import { 
   coachRepository, 
   teamRepository, 
@@ -156,7 +156,7 @@ export function Dashboard() {
         // 8. Técnicos com mais títulos por seleção
         const countSelecao = coachTitles.reduce((acc, title) => {
           const team = t.find(team => team.id === title.teamId);
-          if (team && (team.tipo === 'Selecao' || team.tipo === 'Seleção')) {
+          if (team && team.tipo === 'Selecao') {
             acc[title.coachId] = (acc[title.coachId] || 0) + 1;
           }
           return acc;
