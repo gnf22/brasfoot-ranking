@@ -97,14 +97,20 @@ export function Dashboard() {
         // 5. Técnicos com mais jogos pelo mesmo clube
         const jogosPorClube = coachTeams
           .filter(ct => {
-            const team = t.find(team => team.id === ct.teamId);
-            return team && team.tipo === 'Clube';
+            const team = t.find((team: Team) => team.id === ct.teamId);
+            return team && team.tipo !== 'Selecao';
           })
-          .map(ct => ({
-            coach: c.find(coach => coach.id === ct.coachId),
-            team: t.find(team => team.id === ct.teamId),
-            jogos: ct.jogos
-          }))
+          .map(ct => {
+            let computedJogos = Number(ct.jogos) || 0;
+            if (computedJogos === 0 && Array.isArray(ct.estatisticasPorAno)) {
+              computedJogos = ct.estatisticasPorAno.reduce((sum, ano) => sum + (Number(ano?.jogos) || 0), 0);
+            }
+            return {
+              coach: c.find(coach => coach && coach.id === ct.coachId),
+              team: t.find(team => team && team.id === ct.teamId),
+              jogos: computedJogos
+            };
+          })
           .sort((a, b) => b.jogos - a.jogos)
           .slice(0, 5);
         setTopJogosClube(jogosPorClube);
