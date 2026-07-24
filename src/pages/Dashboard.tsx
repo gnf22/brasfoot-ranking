@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, Users, Shield, Calendar, Medal, TrendingDown, CheckCircle, Target, Flag, Globe } from 'lucide-react';
+import { Trophy, Users, Shield, Calendar, Medal, TrendingDown, CheckCircle, Target, Flag, Globe, Swords, ShieldAlert, AlertTriangle, Repeat } from 'lucide-react';
 import { 
   coachRepository, 
   teamRepository, 
@@ -33,6 +33,11 @@ export function Dashboard() {
   const [topTitulosNacionais, setTopTitulosNacionais] = useState<{ coachId: string, count: number, coach?: Coach }[]>([]);
   const [topTitulosInternacionais, setTopTitulosInternacionais] = useState<{ coachId: string, count: number, coach?: Coach }[]>([]);
   const [topTitulosSelecao, setTopTitulosSelecao] = useState<{ coachId: string, count: number, coach?: Coach }[]>([]);
+
+  const [topOfensivos, setTopOfensivos] = useState<{ coach?: Coach, media: number }[]>([]);
+  const [topDefensivos, setTopDefensivos] = useState<{ coach?: Coach, media: number }[]>([]);
+  const [piorAproveitamento, setPiorAproveitamento] = useState<(RankingCoach & { coach?: Coach })[]>([]);
+  const [maisRodados, setMaisRodados] = useState<{ coach?: Coach, times: number }[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -177,6 +182,67 @@ export function Dashboard() {
           .sort((a, b) => b.count - a.count)
           .slice(0, 5);
         setTopTitulosSelecao(topSelecao);
+
+        // --- NOVOS RANKINGS (Recuperados) ---
+        const coachStats = c.map(coach => {
+          const teams = coachTeams.filter(ct => ct.coachId === coach.id);
+          let jogos = 0;
+          let golsMarcados = 0;
+          let golsSofridos = 0;
+
+          teams.forEach(ct => {
+            jogos += Number(ct.jogos) || 0;
+            golsMarcados += Number(ct.golsMarcados) || 0;
+            golsSofridos += Number(ct.golsSofridos) || 0;
+            
+            if (ct.jogos === 0 && Array.isArray(ct.estatisticasPorAno)) {
+              ct.estatisticasPorAno.forEach(ano => {
+                jogos += Number(ano.jogos) || 0;
+                golsMarcados += Number(ano.golsMarcados) || 0;
+                golsSofridos += Number(ano.golsSofridos) || 0;
+              });
+            }
+          });
+
+          return { coach, jogos, golsMarcados, golsSofridos };
+        });
+
+        const ofensivos = coachStats
+          .filter(s => s.jogos >= 20)
+          .map(s => ({ coach: s.coach, media: Number((s.golsMarcados / s.jogos).toFixed(2)) }))
+          .sort((a, b) => b.media - a.media)
+          .slice(0, 5);
+        setTopOfensivos(ofensivos);
+
+        const defensivos = coachStats
+          .filter(s => s.jogos >= 20)
+          .map(s => ({ coach: s.coach, media: Number((s.golsSofridos / s.jogos).toFixed(2)) }))
+          .sort((a, b) => a.media - b.media)
+          .slice(0, 5);
+        setTopDefensivos(defensivos);
+
+        const byPiorAproveitamento = [...mergedRanking]
+          .filter(r => r.totalJogos >= 15)
+          .sort((a, b) => a.aproveitamento - b.aproveitamento)
+          .slice(0, 5);
+        setPiorAproveitamento(byPiorAproveitamento);
+
+        const rodados = c.map(coach => {
+          const timesUnicos = new Set(
+            coachTeams
+              .filter(ct => ct.coachId === coach.id)
+              .filter(ct => {
+                const team = t.find(team => team.id === ct.teamId);
+                return team && team.tipo !== 'Selecao';
+              })
+              .map(ct => ct.teamId)
+          );
+          return { coach, times: timesUnicos.size };
+        })
+          .sort((a, b) => b.times - a.times)
+          .slice(0, 5);
+        setMaisRodados(rodados);
+
 
       } catch (e) {
         console.error('Error loading dashboard stats:', e);
@@ -437,6 +503,119 @@ export function Dashboard() {
                 </div>
               ))}
               {topTitulosSelecao.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">Sem dados suficientes.</div>}
+            </div>
+          </AppCardContent>
+        </AppCard>
+
+      </div>
+
+      {/* ADDITIONAL RANKINGS ROW */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        
+        {/* OS MAIS OFENSIVOS */}
+        <AppCard>
+          <div className="p-5 border-b bg-card flex items-center gap-2">
+            <Swords className="w-5 h-5 text-orange-500" />
+            <div>
+              <h3 className="text-lg font-bold tracking-tight">Os Mais Ofensivos</h3>
+              <p className="text-xs text-muted-foreground">Média de gols marcados (Min 20 jogos)</p>
+            </div>
+          </div>
+          <AppCardContent className="p-0">
+            <div className="divide-y">
+              {topOfensivos.map((row, i) => (
+                <div key={row.coach?.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-muted-foreground w-4 text-center">{i + 1}º</span>
+                    <Link to={`/coaches/${row.coach?.id}`} className="font-semibold text-primary hover:underline">
+                      {row.coach?.nome}
+                    </Link>
+                  </div>
+                  <span className="font-bold text-lg bg-orange-100 text-orange-800 px-3 py-1 rounded-full">{row.media}</span>
+                </div>
+              ))}
+              {topOfensivos.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">Sem dados suficientes.</div>}
+            </div>
+          </AppCardContent>
+        </AppCard>
+
+        {/* OS RETRANQUEIROS */}
+        <AppCard>
+          <div className="p-5 border-b bg-card flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-zinc-500" />
+            <div>
+              <h3 className="text-lg font-bold tracking-tight">Os Retranqueiros</h3>
+              <p className="text-xs text-muted-foreground">Média de gols sofridos (Min 20 jogos)</p>
+            </div>
+          </div>
+          <AppCardContent className="p-0">
+            <div className="divide-y">
+              {topDefensivos.map((row, i) => (
+                <div key={row.coach?.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-muted-foreground w-4 text-center">{i + 1}º</span>
+                    <Link to={`/coaches/${row.coach?.id}`} className="font-semibold text-primary hover:underline">
+                      {row.coach?.nome}
+                    </Link>
+                  </div>
+                  <span className="font-bold text-lg bg-zinc-100 text-zinc-800 px-3 py-1 rounded-full">{row.media}</span>
+                </div>
+              ))}
+              {topDefensivos.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">Sem dados suficientes.</div>}
+            </div>
+          </AppCardContent>
+        </AppCard>
+
+        {/* PIOR APROVEITAMENTO */}
+        <AppCard>
+          <div className="p-5 border-b bg-card flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+            <div>
+              <h3 className="text-lg font-bold tracking-tight">Pior Aproveitamento</h3>
+              <p className="text-xs text-muted-foreground">Técnicos menos eficientes (Min 15 jogos)</p>
+            </div>
+          </div>
+          <AppCardContent className="p-0">
+            <div className="divide-y">
+              {piorAproveitamento.map((row, i) => (
+                <div key={row.coachId} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-muted-foreground w-4 text-center">{i + 1}º</span>
+                    <Link to={`/coaches/${row.coachId}`} className="font-semibold text-primary hover:underline">
+                      {row.coach?.nome}
+                    </Link>
+                  </div>
+                  <span className="font-bold text-lg bg-red-100 text-red-800 px-3 py-1 rounded-full">{row.aproveitamento}%</span>
+                </div>
+              ))}
+              {piorAproveitamento.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">Sem dados suficientes.</div>}
+            </div>
+          </AppCardContent>
+        </AppCard>
+
+        {/* OS MAIS RODADOS */}
+        <AppCard>
+          <div className="p-5 border-b bg-card flex items-center gap-2">
+            <Repeat className="w-5 h-5 text-indigo-400" />
+            <div>
+              <h3 className="text-lg font-bold tracking-tight">Os Mais Rodados</h3>
+              <p className="text-xs text-muted-foreground">Técnicos que passaram por mais clubes</p>
+            </div>
+          </div>
+          <AppCardContent className="p-0">
+            <div className="divide-y">
+              {maisRodados.map((row, i) => (
+                <div key={row.coach?.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-muted-foreground w-4 text-center">{i + 1}º</span>
+                    <Link to={`/coaches/${row.coach?.id}`} className="font-semibold text-primary hover:underline">
+                      {row.coach?.nome}
+                    </Link>
+                  </div>
+                  <span className="font-bold text-lg bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">{row.times} clubes</span>
+                </div>
+              ))}
+              {maisRodados.length === 0 && <div className="p-6 text-center text-muted-foreground text-sm">Sem dados suficientes.</div>}
             </div>
           </AppCardContent>
         </AppCard>
